@@ -23,6 +23,14 @@ import static minicp.util.exception.InconsistencyException.INCONSISTENCY;
 
 /**
  * Logical or constraint {@code  x1 or x2 or ... xn}
+ * 
+ * Watched literals paper: https://sites.cs.st-andrews.ac.uk/people/ipg1/papers/GentJeffersonMiguelCP06.pdf
+ * For constraints of the form x1 + x2 + ... + xn >= c, where xi are bool vars, "watch" c+1 vars.
+ * Then you only have to care if the vars you are watching get set to 0, instead of if any var changes.
+ * If one gets set to 0, then try to switch the watch to another var.
+ * If you can't find another var to switch to, either
+ *  1. the other c watched vars are the solution.
+ *  2. there is no valid solution.
  */
 public class Or extends AbstractConstraint { // x1 or x2 or ... xn
 
@@ -90,7 +98,7 @@ public class Or extends AbstractConstraint { // x1 or x2 or ... xn
     private boolean moveWatch(StateInt watch) {
         int j;
         for (int i = 0; i < n; ++i) {
-            // TODO: why is this slow if you use a global last index? does this contradict the paper?
+            // TODO: slow w/ shared last idx or non-backtracked watches.
             j = (watch.value() + i) % n;
             if (j == wL.value() || j == wR.value()) { continue; }
             if (!x[j].isFalse()) {
