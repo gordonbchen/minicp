@@ -17,17 +17,18 @@ package minicp.engine.core;
 
 
 import minicp.state.StateManager;
-import minicp.state.StateSparseSet;
+import minicp.state.StateBitVecSet;
 
 /**
- * Implementation of a domain with a sparse-set
+ * Implementation of a domain with a bit vector.
  */
-public class SparseSetDomain implements IntDomain {
-    private StateSparseSet domain;
+// TODO: this is exactly the same as SparseSetDomain. Refactor w/ abstraction?
+public class BitVecDomain implements IntDomain {
+    private StateBitVecSet domain;
 
 
-    public SparseSetDomain(StateManager sm, int min, int max) {
-        domain = new StateSparseSet(sm, max - min + 1, min);
+    public BitVecDomain(StateManager sm, int min, int max) {
+        domain = new StateBitVecSet(sm, max - min + 1, min);
     }
 
     @Override
