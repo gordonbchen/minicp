@@ -20,7 +20,6 @@ import minicp.engine.core.BoolVar;
 import minicp.state.StateInt;
 
 import static minicp.util.exception.InconsistencyException.INCONSISTENCY;
-import minicp.util.exception.NotImplementedException;
 
 /**
  * Logical or constraint {@code  x1 or x2 or ... xn}
@@ -55,8 +54,51 @@ public class Or extends AbstractConstraint { // x1 or x2 or ... xn
 
     @Override
     public void propagate() {
-        // update watched literals
-        // TODO: implement the filtering using watched literal technique and make sure you pass all the tests
-         throw new NotImplementedException("Or");
+        if (x[wL.value()].isFixed()) {
+            prop(wL, wR);
+        }
+        else if (x[wR.value()].isFixed()) {
+            prop(wR, wL);
+        }
+        else {
+            x[wL.value()].propagateOnFix(this);
+            x[wR.value()].propagateOnFix(this);
+        }
+    }
+
+    private void prop(StateInt fixed, StateInt other) {
+        // Fixed to true. Nothing else can be done for other or's.
+        if (x[fixed.value()].isTrue()) {
+            setActive(false);
+            return;
+        }
+
+        // Try to move the watch to another var.
+        if (moveWatch(fixed)) { return; }
+
+        // Could not move the watch. Either the other var can be set to true or no solutions.
+        if (!x[other.value()].isFalse()) {
+            x[other.value()].fix(true);
+            setActive(false);
+            return;
+        }
+
+        // Could not set other var to true. So everything is false, and there is no solution.
+        throw INCONSISTENCY;
+    }
+
+    private boolean moveWatch(StateInt watch) {
+        int j;
+        for (int i = 0; i < n; ++i) {
+            // TODO: why is this slow if you use a global last index? does this contradict the paper?
+            j = (watch.value() + i) % n;
+            if (j == wL.value() || j == wR.value()) { continue; }
+            if (!x[j].isFalse()) {
+                watch.setValue(j);
+                x[j].propagateOnFix(this);
+                return true;
+            }
+        }
+        return false;
     }
 }
