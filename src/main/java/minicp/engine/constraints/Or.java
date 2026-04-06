@@ -31,6 +31,7 @@ import static minicp.util.exception.InconsistencyException.INCONSISTENCY;
  * If you can't find another var to switch to, either
  *  1. the other c watched vars are the solution.
  *  2. there is no valid solution.
+ * wL and wR surround vars that can still be true.
  */
 public class Or extends AbstractConstraint { // x1 or x2 or ... xn
 
@@ -96,14 +97,10 @@ public class Or extends AbstractConstraint { // x1 or x2 or ... xn
     }
 
     private boolean moveWatch(StateInt watch) {
-        int j;
-        for (int i = 0; i < n; ++i) {
-            // TODO: slow w/ shared last idx or non-backtracked watches.
-            j = (watch.value() + i) % n;
-            if (j == wL.value() || j == wR.value()) { continue; }
-            if (!x[j].isFalse()) {
-                watch.setValue(j);
-                x[j].propagateOnFix(this);
+        for (int i = wL.value() + 1; i < wR.value(); ++i) {
+            if (!x[i].isFalse()) {
+                watch.setValue(i);
+                x[i].propagateOnFix(this);
                 return true;
             }
         }
