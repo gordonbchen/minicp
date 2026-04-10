@@ -16,11 +16,8 @@
 
 package minicp.engine.constraints;
 
-import minicp.cp.Factory;
 import minicp.engine.core.AbstractConstraint;
-import minicp.engine.core.Constraint;
 import minicp.engine.core.IntVar;
-import minicp.util.exception.NotImplementedException;
 
 
 /**
@@ -34,6 +31,10 @@ public class Element1DDomainConsistent extends AbstractConstraint {
     private final IntVar y;
     private final IntVar z;
 
+    // for each z in D(z), choose one particular y in D(y) (that maps to to z T[y]=z) to "watch"
+    private final int[] WATCHED_Y;
+    private final int zOffset;
+
     /**
      * Creates an element constraint {@code array[y] = z}
      *
@@ -41,11 +42,6 @@ public class Element1DDomainConsistent extends AbstractConstraint {
      * @param y the index variable
      * @param z the result variable
      */
-
-    // for each z in D(z), choose one particular y in D(y) (that maps to to z T[y]=z) to "watch"
-    private final int[] WATCHED_Y;
-    private final int zOffset;
-
     public Element1DDomainConsistent(int[] array, IntVar y, IntVar z) {
         super(y.getSolver());
         this.t = array;
